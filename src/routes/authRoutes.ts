@@ -1,9 +1,10 @@
 import express from 'express';
-import { loginUser } from '../controllers/authController';
+import { registerUser, loginUser, refreshToken } from '../controllers/authController';
 
 const router = express.Router();
 
-// http://localhost:5000/api/auth/login
+router.post('/register', registerUser);
 router.post('/login', loginUser);
+router.post('/refresh', refreshToken); // අලුත් Route එක
 
 export default router;
