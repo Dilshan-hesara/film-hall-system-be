@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
-// 👇 මෙන්න මේ Import එක හරියටම තියෙන්න ඕන
 import { generateAccessToken, generateRefreshToken } from '../utils/tokens'; 
 
 // 1. REGISTER USER
@@ -26,7 +25,6 @@ export const registerUser = async (req: Request, res: Response) => {
     });
 
     if (user) {
-      // 👇 මෙතන තමයි ඔයාගේ Error එක තිබුණේ. දැන් ඒක හරිගස්සලා තියෙන්නේ:
       const accessToken = generateAccessToken(user.id);
       const refreshToken = generateRefreshToken(user.id);
 
@@ -35,47 +33,18 @@ export const registerUser = async (req: Request, res: Response) => {
         username: user.username,
         email: user.email,
         role: user.role,
-        accessToken,  // අලුත් Access Token යවනවා
-        refreshToken, // අලුත් Refresh Token යවනවා
+        accessToken, 
+        refreshToken,
       });
     } else {
       res.status(400).json({ message: 'Invalid user data' });
     }
   } catch (error) {
-    console.error("Register Error:", error); // Error එක Print කරගන්න
+    console.error("Register Error:", error);
     res.status(500).json({ message: 'Server Error', error });
   }
 };
 
-// 2. LOGIN USER
-// Import එක බලන්න
-// export const loginUser = async (req: Request, res: Response) => {
-//   try {
-//     const { email, password } = req.body;
-//     const user = await User.findOne({ email });
-
-//     if (user && (await bcrypt.compare(password, user.password as string))) {
-      
-//       // 👇 මෙතන පරණ generateToken තිබ්බොත් Error එනවා. මේක මේ විදියටම තියෙන්න ඕන:
-//       const accessToken = generateAccessToken(user.id);
-//       const refreshToken = generateRefreshToken(user.id);
-
-//       res.json({
-//         _id: user.id,
-//         username: user.username,
-//         email: user.email,
-//         role: user.role,
-//         accessToken,  // <-- Frontend එකට යවන නම
-//         refreshToken,
-//       });
-//     } else {
-//       res.status(400).json({ message: 'Invalid email or password' });
-//     }
-//   } catch (error) {
-//     console.error("Login Error:", error); // Terminal එකේ Error එක බලන්න
-//     res.status(500).json({ message: 'Server Error', error });
-//   }
-// };
 export const loginUser = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
@@ -83,7 +52,6 @@ export const loginUser = async (req: Request, res: Response) => {
 
     if (user && (await bcrypt.compare(password, user.password as string))) {
       
-      // Token දෙකම හදනවා
       const accessToken = generateAccessToken(user.id);
       const refreshToken = generateRefreshToken(user.id);
 
