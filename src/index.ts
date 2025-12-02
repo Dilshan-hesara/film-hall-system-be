@@ -23,6 +23,13 @@ app.get("/", (req, res) => {
   res.send("Backend is Running")
 })
 
+
+import movieRoutes from './routes/movieRoutes';
+
+
+app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/movies", movieRoutes);
+
 mongoose
   .connect(MONGO_URI)
   .then(() => {
