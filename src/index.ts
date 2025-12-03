@@ -13,7 +13,7 @@ const app = express()
 app.use(express.json())
 app.use(
   cors({
-    origin: ["http://localhost:5174" ],
+    origin: ["http://localhost:5173" ],
     methods: ["GET", "POST", "PUT", "DELETE"]
   })
 )
@@ -29,6 +29,11 @@ import movieRoutes from './routes/movieRoutes';
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/movies", movieRoutes);
+
+
+import bookingRoutes from './routes/bookingRoutes';
+// ...
+app.use("/api/v1/bookings", bookingRoutes);
 
 mongoose
   .connect(MONGO_URI)
