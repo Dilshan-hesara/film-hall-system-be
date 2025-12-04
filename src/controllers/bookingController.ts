@@ -1,13 +1,16 @@
 import { Request, Response } from 'express';
 import Booking from '../models/Booking';
 
+
+
 export const createBooking = async (req: Request, res: Response) => {
   try {
-    const { userId, movieId, date, time, seats, totalPrice } = req.body;
+    const { userId,hallId, movieId, date, time, seats, totalPrice } = req.body;
 
     // Check if seats are already taken (Double check)
     const existingBooking = await Booking.findOne({
       movie: movieId,
+      hall: hallId,
       date,
       time,
       seats: { $in: seats }, 
@@ -20,6 +23,7 @@ export const createBooking = async (req: Request, res: Response) => {
     const newBooking = new Booking({
       user: userId,
       movie: movieId,
+      hall: hallId,
       date,
       time,
       seats,
@@ -34,11 +38,20 @@ export const createBooking = async (req: Request, res: Response) => {
   }
 };
 
+
+
+
 export const getOccupiedSeats = async (req: Request, res: Response) => {
   try {
-    const { movieId, date, time } = req.query;
+    // 1. Query  hallId  
+    const { movieId, date, time, hallId } = req.query;
 
-    const bookings = await Booking.find({ movie: movieId, date, time });
+    const query: any = { movie: movieId, date, time };
+    if (hallId) {
+      query.hall = hallId;
+    }
+
+    const bookings = await Booking.find(query);
 
     let occupiedSeats: string[] = [];
     bookings.forEach((booking) => {
