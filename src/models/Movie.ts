@@ -6,8 +6,10 @@ export interface IMovie extends Document {
   genre: string;
   duration: number;
   releaseDate: Date;
-  posterUrl: string; 
+  posterUrl: string; // Portrait Image (For Cards)
+  coverUrl: string;  
   ticketPrice: number;
+  status: 'Now Showing' | 'Coming Soon'; 
 }
 
 const MovieSchema: Schema = new Schema(
@@ -18,7 +20,13 @@ const MovieSchema: Schema = new Schema(
     duration: { type: Number, required: true },
     releaseDate: { type: Date, required: true },
     posterUrl: { type: String, required: true },
+    coverUrl: { type: String, default: '' }, 
     ticketPrice: { type: Number, required: true },
+    status: { 
+      type: String, 
+      enum: ['Now Showing', 'Coming Soon'], 
+      default: 'Now Showing' 
+    },
   },
   { timestamps: true }
 );
