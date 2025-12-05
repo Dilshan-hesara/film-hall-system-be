@@ -10,6 +10,7 @@ export interface IMovie extends Document {
   coverUrl: string;  
   ticketPrice: number;
   status: 'Now Showing' | 'Coming Soon'; 
+  censorRating: 'U' | 'UA' | 'A' | 'S'; 
 }
 
 const MovieSchema: Schema = new Schema(
@@ -27,6 +28,13 @@ const MovieSchema: Schema = new Schema(
       enum: ['Now Showing', 'Coming Soon'], 
       default: 'Now Showing' 
     },
+
+    censorRating: {
+      type: String,
+      enum: ['U', 'UA', 'A', 'S'],
+      required: true,
+      default: 'U' 
+    }
   },
   { timestamps: true }
 );
