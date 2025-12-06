@@ -89,3 +89,55 @@ export const deleteUser = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Error deleting user', error });
   }
 };
+
+export const createAdmin = async (req: Request, res: Response) => {
+  try {
+    const { username, email, password, gender } = req.body;
+
+    const userExists = await User.findOne({ email });
+    if (userExists) return res.status(400).json({ message: 'User already exists' });
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const newAdmin = await User.create({
+      username,
+      email,
+      password: hashedPassword,
+      role: 'admin',       // 👇 කෙලින්ම Admin
+      gender: gender || 'Male',
+      isVerified: true,    // 👇 කෙලින්ම Verified
+    });
+
+    res.status(201).json({ message: 'New Admin created successfully', admin: newAdmin });
+  } catch (error) {
+    res.status(500).json({ message: 'Error creating admin', error });
+  }
+};
+
+// 7. Admin Force Reset Password (වෙන කෙනෙක්ගේ Password වෙනස් කිරීම)
+export const adminResetPassword = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params; // වෙනස් කළ යුතු User ගේ ID එක
+    const { newPassword } = req.body;
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    await User.findByIdAndUpdate(id, { password: hashedPassword });
+
+    res.status(200).json({ message: 'Password reset successfully by Admin' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error resetting password', error });
+  }
+};
+
+// 8. Get All Admins Only
+export const getAllAdmins = async (req: Request, res: Response) => {
+  try {
+    const admins = await User.find({ role: 'admin' }).select('-password').sort({ createdAt: -1 });
+    res.status(200).json(admins);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching admins', error });
+  }
+};
