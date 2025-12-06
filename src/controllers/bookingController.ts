@@ -63,3 +63,18 @@ export const getOccupiedSeats = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Error fetching seats', error });
   }
 };
+
+export const getBookingsByUser = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+
+    const bookings = await Booking.find({ user: userId })
+      .populate('movie', 'title posterUrl') 
+      .populate('hall', 'name')             
+      .sort({ createdAt: -1 });             
+
+    res.status(200).json(bookings);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching bookings', error });
+  }
+};
