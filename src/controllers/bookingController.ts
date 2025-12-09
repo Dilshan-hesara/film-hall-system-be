@@ -80,7 +80,7 @@ export const createBooking = async (req: Request, res: Response) => {
 
     if (user && movie && hall) {
       
-      // A. QR Code එක Generate  
+      // A. QR Code  Generate  
       const qrData = JSON.stringify({
         id: newBooking._id,
         movie: movie.title,
@@ -204,5 +204,38 @@ export const getBookingsByUser = async (req: Request, res: Response) => {
     res.status(200).json(bookings);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching bookings', error });
+  }
+};
+
+// ... imports
+
+// 1. Get All Bookings (Admin Only)
+export const getAllBookings = async (req: Request, res: Response) => {
+  try {
+    const bookings = await Booking.find()
+      .populate('user', 'username email') 
+      .populate('movie', 'title')        
+      .populate('hall', 'name')           
+      .sort({ createdAt: -1 });           
+
+    res.status(200).json(bookings);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching bookings', error });
+  }
+};
+
+// 2. Cancel Booking (Admin Only)
+export const cancelBooking = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const deletedBooking = await Booking.findByIdAndDelete(id);
+
+    if (!deletedBooking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    res.status(200).json({ message: 'Booking cancelled successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error cancelling booking', error });
   }
 };
