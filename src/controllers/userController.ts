@@ -35,13 +35,12 @@ export const changePassword = async (req: Request, res: Response) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // පරණ Password එක හරිද බලනවා
+    
     const isMatch = await bcrypt.compare(currentPassword, user.password as string);
     if (!isMatch) {
       return res.status(400).json({ message: 'Incorrect current password' });
     }
 
-    // අලුත් Password එක Hash කරනවා
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(newPassword, salt);
 
@@ -55,7 +54,6 @@ export const changePassword = async (req: Request, res: Response) => {
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
-    // Password එක අතහැරලා (select('-password')) අනිත් විස්තර එවන්න
     const users = await User.find().select('-password').sort({ createdAt: -1 });
     res.status(200).json(users);
   } catch (error) {
@@ -104,9 +102,9 @@ export const createAdmin = async (req: Request, res: Response) => {
       username,
       email,
       password: hashedPassword,
-      role: 'admin',       // 👇 කෙලින්ම Admin
+      role: 'admin',       
       gender: gender || 'Male',
-      isVerified: true,    // 👇 කෙලින්ම Verified
+      isVerified: true,   
     });
 
     res.status(201).json({ message: 'New Admin created successfully', admin: newAdmin });
@@ -115,22 +113,22 @@ export const createAdmin = async (req: Request, res: Response) => {
   }
 };
 
-// 7. Admin Force Reset Password (වෙන කෙනෙක්ගේ Password වෙනස් කිරීම)
-export const adminResetPassword = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params; // වෙනස් කළ යුතු User ගේ ID එක
-    const { newPassword } = req.body;
+// 7. Admin Force Reset Password 
+// export const adminResetPassword = async (req: Request, res: Response) => {
+//   try {
+//     const { id } = req.params; 
+//     const { newPassword } = req.body;
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
+//     const salt = await bcrypt.genSalt(10);
+//     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-    await User.findByIdAndUpdate(id, { password: hashedPassword });
+//     await User.findByIdAndUpdate(id, { password: hashedPassword });
 
-    res.status(200).json({ message: 'Password reset successfully by Admin' });
-  } catch (error) {
-    res.status(500).json({ message: 'Error resetting password', error });
-  }
-};
+//     res.status(200).json({ message: 'Password reset successfully by Admin' });
+//   } catch (error) {
+//     res.status(500).json({ message: 'Error resetting password', error });
+//   }
+// };
 
 // 8. Get All Admins Only
 export const getAllAdmins = async (req: Request, res: Response) => {
@@ -139,5 +137,31 @@ export const getAllAdmins = async (req: Request, res: Response) => {
     res.status(200).json(admins);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching admins', error });
+  }
+};
+
+// ... imports
+
+// 7. Force Reset Password (SUPER ADMIN ONLY)
+export const adminResetPassword = async (req: Request, res: Response) => {
+  try {
+
+    const requester = (req as any).user; 
+
+    if (requester.role !== 'superadmin') {
+      return res.status(403).json({ message: 'Access Denied. Only Super Admin can force reset passwords.' });
+    }
+
+    const { id } = req.params; 
+    const { newPassword } = req.body;
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    await User.findByIdAndUpdate(id, { password: hashedPassword });
+
+    res.status(200).json({ message: 'Password reset successfully by Super Admin' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error resetting password', error });
   }
 };
