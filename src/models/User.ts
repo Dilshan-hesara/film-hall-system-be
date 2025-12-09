@@ -16,9 +16,9 @@ export interface IUser extends Document {
   username: string;
   email: string;
   password: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'superadmin';
   profileImage?: string;
-  gender: 'Male' | 'Female' | 'Other'; // 👇 අලුත් Field එක
+  gender: 'Male' | 'Female' | 'Other'; 
   isVerified: boolean;
   otp?: string;
   otpExpires?: Date;
@@ -29,12 +29,12 @@ const UserSchema: Schema = new Schema(
     username: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    role: { type: String, enum: ['user', 'admin'], default: 'user' },
+    role: { type: String, enum: ['user', 'admin', 'superadmin'], default: 'user' },
     profileImage: { type: String, default: '' }, 
     gender: { type: String, enum: ['Male', 'Female', 'Other'], required: true },
-    isVerified: { type: Boolean, default: false }, // Email Verify කරලාද?
-    otp: { type: String }, // OTP Code එක
-    otpExpires: { type: Date }, //
+    isVerified: { type: Boolean, default: false }, 
+    otp: { type: String }, 
+    otpExpires: { type: Date },
   },
   { timestamps: true }
 );
