@@ -23,4 +23,7 @@ const BookingSchema: Schema = new Schema(
   { timestamps: true }
 );
 
+
+
+
 export default mongoose.model<IBooking>('Booking', BookingSchema);
