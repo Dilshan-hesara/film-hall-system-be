@@ -10,6 +10,7 @@ export const getAdminStats = async (req: Request, res: Response) => {
     // A. Total Bookings
     const totalBookings = await Booking.countDocuments();
 
+    
     // B. Total Users
     const totalUsers = await User.countDocuments({ role: 'user' });
 
