@@ -1,5 +1,5 @@
 import express from 'express';
-import { addMovie, getAllMovies } from '../controllers/movieController';
+import { addMovie, deleteMovie, getAllMovies, updateMovie } from '../controllers/movieController';
 
 const router = express.Router();
 
@@ -12,5 +12,8 @@ import {  getMovieById } from '../controllers/movieController';
 
 // ...
 router.get('/:id', getMovieById);
+
+router.put('/:id', updateMovie);   
+router.delete('/:id', deleteMovie);
 
 export default router;
