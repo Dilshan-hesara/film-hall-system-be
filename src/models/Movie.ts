@@ -6,9 +6,10 @@ export interface IMovie extends Document {
   genre: string;
   duration: number;
   releaseDate: Date;
-  posterUrl: string; // Portrait Image (For Cards)
-  coverUrl: string;  
-  ticketPrice: number;
+  posterUrl: string;
+  coverUrl: string;
+  trailerUrl: string; 
+    ticketPrice: number;
   status: 'Now Showing' | 'Coming Soon'; 
   censorRating: 'U' | 'UA' | 'A' | 'S'; 
 }
@@ -22,6 +23,9 @@ const MovieSchema: Schema = new Schema(
     releaseDate: { type: Date, required: true },
     posterUrl: { type: String, required: true },
     coverUrl: { type: String, default: '' }, 
+    
+    // Video
+    trailerUrl: { type: String, required: true },
     ticketPrice: { type: Number, required: true },
     status: { 
       type: String, 
