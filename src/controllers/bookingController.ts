@@ -69,6 +69,7 @@ export const createBooking = async (req: Request, res: Response) => {
       time,
       seats,
       totalPrice,
+paymentMethod: 'Card'
     });
 
     await newBooking.save();
@@ -239,3 +240,156 @@ export const cancelBooking = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Error cancelling booking', error });
   }
 };
+
+
+
+
+// 3. Verify & Scan Ticket (Admin App)
+export const verifyTicket = async (req: Request, res: Response) => {
+  try {
+    const { bookingId } = req.body;
+
+    const booking = await Booking.findById(bookingId)
+      .populate('user', 'username')
+      .populate('movie', 'title')
+      .populate('hall', 'name');
+
+    if (!booking) {
+      return res.status(404).json({ message: 'Invalid Ticket! Booking not found.' });
+    }
+
+    // Check if cancelled
+    if (booking.status === 'Cancelled') {
+      return res.status(400).json({ message: 'This ticket has been CANCELLED.' });
+    }
+
+    // Check if already used
+    if (booking.status === 'Used') {
+      return res.status(400).json({ 
+        message: 'Ticket already USED!', 
+        details: {
+            user: booking.user,
+            movie: booking.movie,
+            seats: booking.seats,
+            scannedAt: booking.updatedAt
+        }
+      });
+    }
+
+    // Valid Ticket නම්, status එක 'Used' කරනවා
+    booking.status = 'Used';
+    await booking.save();
+
+    res.status(200).json({ 
+      message: 'Ticket Verified Successfully! ✅', 
+      booking: {
+        id: booking._id,
+        user: booking.user,
+        movie: booking.movie,
+        hall: booking.hall,
+        seats: booking.seats,
+        date: booking.date,
+        time: booking.time
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: 'Error verifying ticket', error });
+  }
+};
+
+// 4. Create Counter Booking (POS)
+export const createCounterBooking = async (req: Request, res: Response) => {
+  try {
+    console.log("📥 Received Booking Request:", req.body); // 1. Frontend එකෙන් එන දත්ත බලන්න
+
+    const { movieId, hallId, date, time, seats, totalPrice, guestName, guestPhone } = req.body;
+
+    // Validation Check
+    if (!movieId || !hallId || !date || !time || !seats || seats.length === 0) {
+        console.error("❌ Missing Fields");
+        return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    // 2. Create Booking
+    const newBooking = new Booking({
+      movie: movieId,
+      hall: hallId,
+      date,
+      time,
+      seats,
+      totalPrice,
+      status: 'Paid',
+      paymentMethod: 'Cash',
+      guestInfo: {
+        name: guestName || 'Walk-in Customer',
+        phone: guestPhone || 'N/A'
+      }
+      // වැදගත්: මෙතන 'user' field එක යවන්නේ නෑ (ඒක හිස්ව තියෙන්න ඕන)
+    });
+
+    await newBooking.save();
+    console.log("✅ Booking Saved Successfully!");
+
+    res.status(201).json({ message: 'Booking Successful!', booking: newBooking });
+
+  } catch (error: any) {
+    console.error("❌ Counter Booking Error:", error.message); // 2. Error එක මොකක්ද කියලා බලන්න
+    res.status(500).json({ message: 'Counter Booking Failed', error: error.message });
+  }
+};
+// ... imports including User
+
+import mongoose from 'mongoose'; // 👈👈👈 මේ පේළිය අනිවාර්යයෙන්ම එකතු කරන්න
+
+
+// ... ඉතුරු කෝඩ් එක එලෙසම තියන්න ...
+
+export const searchBookings = async (req: Request, res: Response) => {
+  try {
+    const { query } = req.query;
+
+    if (!query) {
+      return res.status(400).json({ message: "Search query is required" });
+    }
+
+    const searchString = query as string;
+    const searchRegex = new RegExp(searchString, 'i');
+
+    const matchingUsers = await User.find({
+      $or: [{ email: searchRegex }, { phone: searchRegex }, { username: searchRegex }] 
+    }).select('_id');
+
+    const userIds = matchingUsers.map(u => u._id);
+
+    const searchConditions: any[] = [
+        { user: { $in: userIds } },
+        { 'guestInfo.phone': searchRegex },
+        { 'guestInfo.name': searchRegex },
+        { 'guestInfo.nic': searchRegex }
+    ];
+
+    // 👇 දැන් මේ පේළිය වැඩ කරයි (මොකද උඩින් import කළ නිසා)
+    if (mongoose.Types.ObjectId.isValid(searchString)) {
+        searchConditions.push({ _id: searchString });
+    }
+
+    const bookings = await Booking.find({
+      $or: searchConditions
+    })
+    .populate('user', 'username email phone')
+    .populate('movie', 'title')
+    .populate('hall', 'name')
+    .sort({ createdAt: -1 });
+
+    res.status(200).json(bookings);
+
+  } catch (error) {
+    console.error("Search Error:", error);
+    res.status(500).json({ message: 'Search failed', error });
+  }
+};
+
+
+
+
