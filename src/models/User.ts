@@ -22,6 +22,7 @@ export interface IUser extends Document {
   isVerified: boolean;
   otp?: string;
   otpExpires?: Date;
+  wishlist: mongoose.Schema.Types.ObjectId[];
 }
 
 const UserSchema: Schema = new Schema(
@@ -35,6 +36,7 @@ const UserSchema: Schema = new Schema(
     isVerified: { type: Boolean, default: false }, 
     otp: { type: String }, 
     otpExpires: { type: Date },
+    wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Movie' }],
   },
   { timestamps: true }
 );
