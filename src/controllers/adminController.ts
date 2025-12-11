@@ -101,3 +101,36 @@ export const getRecentBookings = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Error fetching recent bookings', error });
     }
 };
+
+
+// ... imports
+
+// 3. Get Monthly Sales Data (For Export)
+export const getMonthlySales = async (req: Request, res: Response) => {
+  try {
+    const { month, year } = req.query; // e.g., ?month=12&year=2025
+
+    if (!month || !year) {
+      return res.status(400).json({ message: "Month and Year required" });
+    }
+
+    // Date Range Setup
+    const startDate = new Date(Number(year), Number(month) - 1, 1);
+    const endDate = new Date(Number(year), Number(month), 0); // Last day of month
+
+    const salesData = await Booking.find({
+      createdAt: {
+        $gte: startDate,
+        $lte: endDate
+      }
+    })
+    .populate('user', 'username email')
+    .populate('movie', 'title')
+    .sort({ createdAt: -1 });
+
+    res.status(200).json(salesData);
+
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching report data', error });
+  }
+};
