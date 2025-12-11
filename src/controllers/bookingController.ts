@@ -466,3 +466,57 @@ export const cancelBookingRes = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Server error while cancelling' });
   }
 };
+
+
+// ... imports
+
+// 7. Get Daily Report (Shift Report)
+export const getDailyReport = async (req: Request, res: Response) => {
+  try {
+    // 1. අද දවස ආරම්භය සහ අවසානය (Timestamp)
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // 2. අද දවසේ සෑදූ (Created) සියලුම බුකින්ස් ගන්න
+    // (සටහන: Show Date එක නෙවෙයි, සල්ලි ගෙවපු දිනය වැදගත්)
+    const todaysTransactions = await Booking.find({
+      createdAt: { $gte: startOfDay, $lte: endOfDay }
+    });
+
+    // 3. ගණනය කිරීම් (Calculations)
+    let totalCash = 0;
+    let totalCard = 0;
+    let cancelledAmount = 0;
+
+    todaysTransactions.forEach(booking => {
+      if (booking.status === 'Paid') {
+        if (booking.paymentMethod === 'Cash') {
+          totalCash += booking.totalPrice;
+        } else if (booking.paymentMethod === 'Card') {
+          totalCard += booking.totalPrice;
+        }
+      } else if (booking.status === 'Cancelled') {
+        cancelledAmount += booking.totalPrice;
+      }
+    });
+
+    // 4. Net Balance (Cash in Hand) = අතේ තියෙන මුදල්
+    // (Cancelled ඒවා අඩු කරන්න අවශ්‍ය නම් මෙතන logic වෙනස් කරන්න පුළුවන්, 
+    // නමුත් සාමාන්‍යයෙන් Cash එකතු වුන ගාන තමයි Cashier ගාව තියෙන්න ඕන)
+    
+    res.status(200).json({
+      date: startOfDay.toISOString().split('T')[0],
+      totalBookingsCount: todaysTransactions.length,
+      totalCash,      // අතේ මුදල්
+      totalCard,      // ඔන්ලයින් ආදායම
+      totalRevenue: totalCash + totalCard, // මුළු ආදායම
+      cancelledAmount // අවලංගු කළ වටිනාකම
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: 'Error generating report', error });
+  }
+};

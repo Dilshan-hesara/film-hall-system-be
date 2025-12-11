@@ -1,5 +1,9 @@
 import express from 'express';
-import { cancelBooking, createBooking, getOccupiedSeats ,getAllBookings ,searchBookings} from '../controllers/bookingController';
+import { cancelBooking, createBooking, getOccupiedSeats ,getAllBookings ,searchBookings,getDailyReport, cancelBookingRes} from '../controllers/bookingController';
+import { verifyTicket } from '../controllers/bookingController';
+import { createCounterBooking } from '../controllers/bookingController';
+import { getBookingsByUser } from '../controllers/bookingController';
+
 
 const router = express.Router();
 
@@ -7,7 +11,6 @@ router.post('/create', createBooking);
 router.get('/occupied', getOccupiedSeats);
 
 
-import { getBookingsByUser } from '../controllers/bookingController';
 
 // ...
 // GET: http://localhost:5000/api/v1/bookings/user/123
@@ -17,16 +20,17 @@ router.get('/all', getAllBookings);       // GET: /api/v1/bookings/all
 router.delete('/:id', cancelBooking);
 
 
-import { verifyTicket } from '../controllers/bookingController';
 
 // ...
 router.post('/scan', verifyTicket);
 
-import { createCounterBooking } from '../controllers/bookingController';
 
 // ...
 router.post('/counter-book', createCounterBooking); // POST /api/v1/bookings/counter-book
 
 router.get('/search', searchBookings); // GET /api/v1/bookings/search?q=0771234567
+router.get('/daily-report', getDailyReport); // GET /api/v1/bookings/daily-report
+router.put('/cancel/:id', cancelBookingRes);
+
 
 export default router;
