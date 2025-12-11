@@ -1,5 +1,5 @@
 import express from 'express';
-import { cancelBooking, createBooking, getOccupiedSeats ,getAllBookings} from '../controllers/bookingController';
+import { cancelBooking, createBooking, getOccupiedSeats ,getAllBookings ,searchBookings} from '../controllers/bookingController';
 
 const router = express.Router();
 
@@ -27,5 +27,6 @@ import { createCounterBooking } from '../controllers/bookingController';
 // ...
 router.post('/counter-book', createCounterBooking); // POST /api/v1/bookings/counter-book
 
+router.get('/search', searchBookings); // GET /api/v1/bookings/search?q=0771234567
 
 export default router;
