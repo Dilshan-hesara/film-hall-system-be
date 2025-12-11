@@ -5,7 +5,7 @@ import User from '../models/User';
 import Movie from '../models/Movie';
 import Hall from '../models/Hall';
 import { sendEmail } from '../utils/email';
-
+import Show from '../models/Booking'; // 👇 Show model එක අනිවාර්යයෙන් import කරන්න
 
 // export const createBooking = async (req: Request, res: Response) => {
 //   try {
@@ -393,3 +393,76 @@ export const searchBookings = async (req: Request, res: Response) => {
 
 
 
+// Booking Cancel කිරීමේ function එක
+// export const cancelBookingRes = async (req: Request, res: Response) => {
+//   try {
+//     const { id } = req.params; // URL එකෙන් Booking ID එක ගන්නවා
+
+//     // 1. මුලින්ම Booking එක හොයාගන්න
+//     const booking = await Booking.findById(id);
+
+//     if (!booking) {
+//       return res.status(404).json({ message: 'Booking not found' });
+//     }
+
+//     // 2. දැනටමත් Cancel කරලා නම් නවත්වන්න
+//     if (booking.status === 'Cancelled') {
+//       return res.status(400).json({ message: 'This booking is already cancelled' });
+//     }
+
+//     // 3. Status එක වෙනස් කරන්න
+//     booking.status = 'Cancelled';
+    
+//     // (Optional) Refund reason එකක් දාන්න ඕන නම් database එකට field එකක් එකතු කරන්න පුළුවන්.
+//     // booking.refundReason = req.body.reason; 
+
+//     await booking.save();
+
+//     res.status(200).json({ 
+//       message: 'Booking cancelled successfully', 
+//       booking 
+//     });
+
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Server error while cancelling' });
+//   }
+// };
+
+export const cancelBookingRes = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    // 1. Booking එක හොයාගන්න
+    const booking = await Booking.findById(id);
+
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    if (booking.status === 'Cancelled') {
+      return res.status(400).json({ message: 'Booking is already cancelled' });
+    }
+
+    // --- වැදගත්ම කොටස මෙතන ---
+
+    // 2. අදාළ Show එකෙන් සීට් ටික අයින් කරන්න (Release Seats)
+    // අපි මෙතන $pull පාවිච්චි කරලා Show එකේ 'bookedSeats' array එකෙන් මේ සීට් ටික අයින් කරනවා
+    await Show.findByIdAndUpdate(
+      booking.showId, 
+      { 
+        $pull: { bookedSeats: { $in: booking.seats } } 
+      }
+    );
+
+    // 3. Booking Status එක වෙනස් කරන්න
+    booking.status = 'Cancelled';
+    await booking.save();
+
+    res.status(200).json({ message: 'Booking cancelled and seats released successfully' });
+
+  } catch (error) {
+    console.error("Cancel Error:", error);
+    res.status(500).json({ message: 'Server error while cancelling' });
+  }
+};
