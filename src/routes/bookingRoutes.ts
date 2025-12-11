@@ -16,4 +16,16 @@ router.get('/user/:userId', getBookingsByUser);
 router.get('/all', getAllBookings);       // GET: /api/v1/bookings/all
 router.delete('/:id', cancelBooking);
 
+
+import { verifyTicket } from '../controllers/bookingController';
+
+// ...
+router.post('/scan', verifyTicket);
+
+import { createCounterBooking } from '../controllers/bookingController';
+
+// ...
+router.post('/counter-book', createCounterBooking); // POST /api/v1/bookings/counter-book
+
+
 export default router;
