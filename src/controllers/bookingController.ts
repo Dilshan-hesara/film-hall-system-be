@@ -170,12 +170,41 @@ paymentMethod: 'Card'
   }
 };
 
+// export const getOccupiedSeats = async (req: Request, res: Response) => {
+//   try {
+//     // 1. Query  hallId  
+//     const { movieId, date, time, hallId } = req.query;
+
+//     const query: any = { movie: movieId, date, time };
+//     if (hallId) {
+//       query.hall = hallId;
+//     }
+
+//     const bookings = await Booking.find(query);
+
+//     let occupiedSeats: string[] = [];
+//     bookings.forEach((booking) => {
+//       occupiedSeats = occupiedSeats.concat(booking.seats);
+//     });
+
+//     res.status(200).json(occupiedSeats);
+//   } catch (error) {
+//     res.status(500).json({ message: 'Error fetching seats', error });
+//   }
+// };
+
 export const getOccupiedSeats = async (req: Request, res: Response) => {
   try {
-    // 1. Query  hallId  
     const { movieId, date, time, hallId } = req.query;
 
-    const query: any = { movie: movieId, date, time };
+    // 👇 මෙන්න වෙනස් කළ තැන
+    const query: any = { 
+        movie: movieId, 
+        date, 
+        time,
+        status: { $ne: 'Cancelled' } // වැදගත්ම කොටස: Cancelled ඒවා ගන්න එපා
+    };
+
     if (hallId) {
       query.hall = hallId;
     }
@@ -188,6 +217,7 @@ export const getOccupiedSeats = async (req: Request, res: Response) => {
     });
 
     res.status(200).json(occupiedSeats);
+    
   } catch (error) {
     res.status(500).json({ message: 'Error fetching seats', error });
   }
@@ -429,9 +459,10 @@ export const searchBookings = async (req: Request, res: Response) => {
 //   }
 // };
 
+// 8. Cancel Booking (Reception)
 export const cancelBookingRes = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params; // Booking ID එක
 
     // 1. Booking එක හොයාගන්න
     const booking = await Booking.findById(id);
@@ -444,18 +475,7 @@ export const cancelBookingRes = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Booking is already cancelled' });
     }
 
-    // --- වැදගත්ම කොටස මෙතන ---
-
-    // 2. අදාළ Show එකෙන් සීට් ටික අයින් කරන්න (Release Seats)
-    // අපි මෙතන $pull පාවිච්චි කරලා Show එකේ 'bookedSeats' array එකෙන් මේ සීට් ටික අයින් කරනවා
-    await Show.findByIdAndUpdate(
-      booking.showId, 
-      { 
-        $pull: { bookedSeats: { $in: booking.seats } } 
-      }
-    );
-
-    // 3. Booking Status එක වෙනස් කරන්න
+    // 2. Status එක වෙනස් කරන්න (එච්චරයි කරන්න ඕන)
     booking.status = 'Cancelled';
     await booking.save();
 
@@ -468,52 +488,91 @@ export const cancelBookingRes = async (req: Request, res: Response) => {
 };
 
 
+// Get Occupied Seats (Frontend එකට රතු පාට සීට් යවන එක)
+export const getBookedSeats = async (req: Request, res: Response) => {
+  try {
+    const { movieId, hallId, date, time } = req.query;
+
+    const bookings = await Booking.find({
+      movie: movieId,
+      hall: hallId,
+      date: date,
+      time: time,
+      // 👇 මේ පේළිය අනිවාර්යයෙන්ම තියෙන්න ඕන!
+      status: { $ne: 'Cancelled' } // "Cancelled" නොවන ඒවා පමණක් ගන්න
+    });
+
+    // සීට් ටික Array එකක් විදියට ගන්නවා
+    const occupiedSeats = bookings.flatMap(b => b.seats);
+
+    res.status(200).json(occupiedSeats);
+
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching seats', error });
+  }
+};
+
 // ... imports
 
 // 7. Get Daily Report (Shift Report)
+// ... imports
+
+// 7. Get Daily Report (Detailed Shift Report)
+// ... imports
+
+// 7. Get Daily Report (Corrected Calculation)
 export const getDailyReport = async (req: Request, res: Response) => {
   try {
-    // 1. අද දවස ආරම්භය සහ අවසානය (Timestamp)
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 
     const endOfDay = new Date();
     endOfDay.setHours(23, 59, 59, 999);
 
-    // 2. අද දවසේ සෑදූ (Created) සියලුම බුකින්ස් ගන්න
-    // (සටහන: Show Date එක නෙවෙයි, සල්ලි ගෙවපු දිනය වැදගත්)
-    const todaysTransactions = await Booking.find({
+    const allTransactions = await Booking.find({
       createdAt: { $gte: startOfDay, $lte: endOfDay }
     });
 
-    // 3. ගණනය කිරීම් (Calculations)
-    let totalCash = 0;
-    let totalCard = 0;
-    let cancelledAmount = 0;
+    let cashSales = 0; // අතේ ඉතුරු වී ඇති මුදල් (Paid only)
+    let cardSales = 0;
+    let cashRefunds = 0; // ආපසු දුන් මුදල් (Cancelled only)
+    let cancelledCount = 0;
 
-    todaysTransactions.forEach(booking => {
+    allTransactions.forEach(booking => {
+      // 1. Paid නම් පමණක් ආදායමට එකතු කරන්න
+      // (Cancelled ඒවා මෙතනට එන්නේ නෑ, ඒ නිසා ආයේ අඩු කරන්න ඕන නෑ)
       if (booking.status === 'Paid') {
         if (booking.paymentMethod === 'Cash') {
-          totalCash += booking.totalPrice;
-        } else if (booking.paymentMethod === 'Card') {
-          totalCard += booking.totalPrice;
+          cashSales += booking.totalPrice;
+        } else {
+          cardSales += booking.totalPrice;
         }
-      } else if (booking.status === 'Cancelled') {
-        cancelledAmount += booking.totalPrice;
+      } 
+      // 2. Cancelled ඒවා වෙනම ගණන් හදන්න (Report එකේ පෙන්නන්න විතරයි)
+      else if (booking.status === 'Cancelled') {
+        cancelledCount++;
+        if (booking.paymentMethod === 'Cash') {
+          cashRefunds += booking.totalPrice;
+        }
       }
     });
 
-    // 4. Net Balance (Cash in Hand) = අතේ තියෙන මුදල්
-    // (Cancelled ඒවා අඩු කරන්න අවශ්‍ය නම් මෙතන logic වෙනස් කරන්න පුළුවන්, 
-    // නමුත් සාමාන්‍යයෙන් Cash එකතු වුන ගාන තමයි Cashier ගාව තියෙන්න ඕන)
-    
+    // 👇 නිවැරදි කිරීම: cashSales කියන්නේ දැනටමත් Refund අඩු වූ ගානයි.
+    // ඒ නිසා ආයේ අඩු කරන්න එපා.
+    const netCashInHand = cashSales; 
+
+    // Gross Total (මුලින්ම අතට ආපු මුළු ගාන - පෙන්නන්න ඕන නම් විතරක්)
+    const totalCashCollectedInitially = cashSales + cashRefunds;
+
     res.status(200).json({
       date: startOfDay.toISOString().split('T')[0],
-      totalBookingsCount: todaysTransactions.length,
-      totalCash,      // අතේ මුදල්
-      totalCard,      // ඔන්ලයින් ආදායම
-      totalRevenue: totalCash + totalCard, // මුළු ආදායම
-      cancelledAmount // අවලංගු කළ වටිනාකම
+      totalBookings: allTransactions.length,
+      cashSales, // මෙය තමයි අවසාන අතේ තියෙන ගාන
+      cardSales,
+      cashRefunds,
+      cancelledCount,
+      netCashInHand, // = cashSales
+      totalCashCollectedInitially // (අවශ්‍ය නම් විතරක් පාවිච්චි කරන්න)
     });
 
   } catch (error) {
