@@ -63,3 +63,33 @@ export const deleteMovie = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Error deleting movie', error });
   }
 };
+
+// 6. Advanced Search & Filter
+export const searchMovies = async (req: Request, res: Response) => {
+  try {
+    const { search, genre, language } = req.query;
+
+    const query: any = {};
+
+    // 1. Text Search (Partial Match - Case Insensitive)
+    if (search) {
+      query.title = { $regex: search, $options: 'i' };
+    }
+
+    // 2. Genre Filter
+    if (genre && genre !== 'All') {
+      query.genre = genre;
+    }
+
+    // 3. Language Filter
+    if (language && language !== 'All') {
+      query.language = language;
+    }
+
+    const movies = await Movie.find(query).sort({ releaseDate: -1 }); // අලුත් ඒවා උඩින්
+
+    res.status(200).json(movies);
+  } catch (error) {
+    res.status(500).json({ message: 'Error searching movies', error });
+  }
+};
