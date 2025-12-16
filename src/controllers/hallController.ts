@@ -50,3 +50,44 @@ export const getHallById = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Error fetching hall', error });
   }
 };
+
+
+// 4. Update Hall
+export const updateHall = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { name, rows, columns } = req.body;
+
+    const capacity = rows * columns;
+
+    const updatedHall = await Hall.findByIdAndUpdate(
+      id, 
+      { name, rows, columns, capacity }, 
+      { new: true }
+    );
+    
+    if (!updatedHall) {
+      return res.status(404).json({ message: 'Hall not found' });
+    }
+    
+    res.status(200).json(updatedHall);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating hall', error });
+  }
+};
+
+// 5. Delete Hall
+export const deleteHall = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const deletedHall = await Hall.findByIdAndDelete(id);
+
+    if (!deletedHall) {
+      return res.status(404).json({ message: 'Hall not found' });
+    }
+
+    res.status(200).json({ message: 'Hall deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting hall', error });
+  }
+};
