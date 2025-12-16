@@ -12,6 +12,7 @@ export interface IMovie extends Document {
     ticketPrice: number;
   status: 'Now Showing' | 'Coming Soon'; 
   censorRating: 'U' | 'UA' | 'A' | 'S'; 
+  language: 'English' | 'Sinhala' | 'Tamil';
 }
 
 const MovieSchema: Schema = new Schema(
@@ -38,7 +39,9 @@ const MovieSchema: Schema = new Schema(
       enum: ['U', 'UA', 'A', 'S'],
       required: true,
       default: 'U' 
-    }
+    },
+
+    language: { type: String, enum: ['English', 'Sinhala', 'Tamil'], default: 'English' },
   },
   { timestamps: true }
 );
