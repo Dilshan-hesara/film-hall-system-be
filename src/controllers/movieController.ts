@@ -86,7 +86,7 @@ export const searchMovies = async (req: Request, res: Response) => {
       query.language = language;
     }
 
-    const movies = await Movie.find(query).sort({ releaseDate: -1 }); // අලුත් ඒවා උඩින්
+    const movies = await Movie.find(query).sort({ releaseDate: -1 });
 
     res.status(200).json(movies);
   } catch (error) {
