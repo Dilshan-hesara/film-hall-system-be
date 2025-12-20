@@ -140,7 +140,6 @@ export const getAllAdmins = async (req: Request, res: Response) => {
   }
 };
 
-// ... imports
 
 // 7. Force Reset Password (SUPER ADMIN ONLY)
 export const adminResetPassword = async (req: Request, res: Response) => {
@@ -163,5 +162,45 @@ export const adminResetPassword = async (req: Request, res: Response) => {
     res.status(200).json({ message: 'Password reset successfully by Super Admin' });
   } catch (error) {
     res.status(500).json({ message: 'Error resetting password', error });
+  }
+};
+
+
+
+// 9. Toggle Wishlist (Add or Remove)
+export const toggleWishlist = async (req: Request, res: Response) => {
+  try {
+    const { userId, movieId } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const isAdded = user.wishlist.includes(movieId);
+
+    if (isAdded) {
+      user.wishlist = user.wishlist.filter(id => id.toString() !== movieId);
+      await user.save();
+      res.status(200).json({ message: 'Removed from Watchlist', wishlist: user.wishlist, added: false });
+    } else {
+      user.wishlist.push(movieId);
+      await user.save();
+      res.status(200).json({ message: 'Added to Watchlist', wishlist: user.wishlist, added: true });
+    }
+
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating watchlist', error });
+  }
+};
+
+// 10. Get User Wishlist
+export const getWishlist = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params; 
+    const user = await User.findById(id).populate('wishlist');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.status(200).json(user.wishlist);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching watchlist', error });
   }
 };
