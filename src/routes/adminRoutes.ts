@@ -14,4 +14,9 @@ router.get('/recent', getRecentBookings);
 
 router.get('/reports/sales', getMonthlySales); // GET /api/v1/admin/reports/sales?month=12&year=2025
 
+
+import { getReceptionDashboard } from '../controllers/adminController';
+
+// ...
+router.get('/reception-dashboard', getReceptionDashboard);
 export default router;
