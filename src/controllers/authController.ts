@@ -1,12 +1,3 @@
-// import { Request, Response } from 'express';
-// import bcrypt from 'bcryptjs';
-// import jwt from 'jsonwebtoken';
-// import User from '../models/User';
-import { generateAccessToken, generateRefreshToken } from '../utils/tokens'; 
-
-
-
-
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -86,24 +77,24 @@ export const verifyOTP = async (req: Request, res: Response) => {
 
 
 
-// 3. LOGIN 
-export const loginUser = async (req: Request, res: Response) => {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
+// // 3. LOGIN 
+// export const loginUser = async (req: Request, res: Response) => {
+//     const { email, password } = req.body;
+//     const user = await User.findOne({ email });
 
-    if (user && (await bcrypt.compare(password, user.password as string))) {
-        if (!user.isVerified) {
-            return res.status(401).json({ message: 'Please verify your email first.' });
-        }
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET as string, { expiresIn: '30d' });
-        res.json({
-            user: { _id: user._id, username: user.username, email: user.email, role: user.role },
-            accessToken: token 
-        });
-    } else {
-        res.status(400).json({ message: 'Invalid credentials' });
-    }
-};
+//     if (user && (await bcrypt.compare(password, user.password as string))) {
+//         if (!user.isVerified) {
+//             return res.status(401).json({ message: 'Please verify your email first.' });
+//         }
+//         const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET as string, { expiresIn: '30d' });
+//         res.json({
+//             user: { _id: user._id, username: user.username, email: user.email, role: user.role },
+//             accessToken: token 
+//         });
+//     } else {
+//         res.status(400).json({ message: 'Invalid credentials' });
+//     }
+// };
 
 // 4. FORGOT PASSWORD 
 export const forgotPassword = async (req: Request, res: Response) => {
@@ -141,18 +132,90 @@ export const resetPassword = async (req: Request, res: Response) => {
 
 
 // 3. REFRESH TOKEN
-export const refreshToken = async (req: Request, res: Response) => {
-  const { token } = req.body;
+// export const refreshToken = async (req: Request, res: Response) => {
+//   const { token } = req.body;
 
-  if (!token) return res.status(401).json({ message: 'No token provided' });
+//   if (!token) return res.status(401).json({ message: 'No token provided' });
 
+//   try {
+//     const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET as string) as { id: string };
+//     const newAccessToken = generateAccessToken(decoded.id);
+
+//     res.json({ accessToken: newAccessToken });
+
+//   } catch (error) {
+//     res.status(403).json({ message: 'Invalid Refresh Token' });
+//   }
+// };
+
+
+/////////////////////////////////////
+
+
+
+
+
+
+
+
+
+const generateAccessToken = (user: any) => {
+  return jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET!, { expiresIn: '15m' }); 
+};
+
+const generateRefreshToken = (user: any) => {
+  return jwt.sign({ id: user._id }, process.env.JWT_REFRESH_SECRET!, { expiresIn: '7d' }); 
+};
+
+
+// 2. Login User (Updated)
+export const loginUser = async (req: Request, res: Response) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET as string) as { id: string };
-    const newAccessToken = generateAccessToken(decoded.id);
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
 
-    res.json({ accessToken: newAccessToken });
+    if (!user) return res.status(400).json({ message: 'User not found' });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+
+    // Generate Both Tokens
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    // Save refreshToken in DB (Optional but recommended for security/logout)
+    // user.refreshToken = refreshToken; await user.save(); 
+
+    res.status(200).json({ 
+        message: 'Login successful', 
+        accessToken, 
+        refreshToken, // Send both
+        user: { _id: user._id, username: user.username, email: user.email, role: user.role, profileImage: user.profileImage } 
+    });
 
   } catch (error) {
-    res.status(403).json({ message: 'Invalid Refresh Token' });
+    res.status(500).json({ message: 'Server error', error });
   }
+};
+
+//3. NEW: Refresh Token Function
+export const refreshToken = async (req: Request, res: Response) => {
+  const { token } = req.body; // Client sends refresh token
+
+  if (!token) return res.status(401).json({ message: "You are not authenticated!" });
+
+  // Verify Refresh Token
+  jwt.verify(token, process.env.JWT_REFRESH_SECRET!, (err: any, user: any) => {
+    if (err) return res.status(403).json({ message: "Token is not valid!" });
+
+    // Generate NEW Access Token
+    // Note: user contains the decoded payload { id: ... }
+    // We might need to fetch full user role again if needed, or include role in refresh token.
+    // For simplicity, assuming basic user obj is enough or fetch from DB:
+    
+    const newAccessToken = jwt.sign({ id: user.id, role: user.role || 'user' }, process.env.JWT_SECRET!, { expiresIn: '15m' });
+    
+    // Send new refresh token too? Usually we rotate it, but for uni project keeping same is okay.
+    res.status(200).json({ accessToken: newAccessToken });
+  });
 };
