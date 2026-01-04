@@ -1,10 +1,11 @@
 import express from 'express';
 import { updateProfile, changePassword ,getAllUsers , updateUserRole ,deleteUser, createAdmin, getAllAdmins, adminResetPassword ,toggleWishlist,getWishlist } from '../controllers/userController';
+import { chatWithAI } from '../controllers/chatController';
 
 const router = express.Router();
 
-router.put('/profile', updateProfile); // PUT: /api/v1/users/profile
-router.put('/password', changePassword); // PUT: /api/v1/users/password
+router.put('/profile', updateProfile); 
+router.put('/password', changePassword);
 
 
 router.get('/all', getAllUsers);
@@ -15,12 +16,11 @@ router.post('/admin/create', createAdmin);
 router.put('/admin/reset-password/:id', adminResetPassword);
 router.get('/admin/all', getAllAdmins);
 
+router.post('/chat', chatWithAI);
 
 
-// ...
-router.put('/wishlist/toggle', toggleWishlist); // PUT Request
-router.get('/wishlist/:id', getWishlist);       // GET Request
-
+router.put('/wishlist/toggle', toggleWishlist); 
+router.get('/wishlist/:id', getWishlist);      
 
 
 export default router;
