@@ -301,7 +301,8 @@ export const verifyTicket = async (req: Request, res: Response) => {
             user: booking.user,
             movie: booking.movie,
             seats: booking.seats,
-            scannedAt: booking.updatedAt
+            // scannedAt: booking.updatedAt
+            scannedAt: (booking as any).updatedAt
         }
       });
     }
