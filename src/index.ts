@@ -2,7 +2,7 @@ import express from "express"
 import cors from "cors"
 import authRouter from "./routes/authRoutes"
 import dotenv from "dotenv"
-import { Request, Response, NextFunction } from "express";
+import e, { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose"
 
 import movieRoutes from './routes/movieRoutes';
@@ -73,6 +73,8 @@ app.use(notFound);
 app.use(errorHandler);
 
 
+
+
 app.use((req: Request, res: Response, next: NextFunction) => {
   const error = new Error(`Route Not Found - ${req.originalUrl}`);
   res.status(404);
@@ -94,3 +96,14 @@ mongoose
 app.listen(SERVER_PORT, () => {
   console.log(`Server is running on ${SERVER_PORT}`)
 })
+
+
+const PORT = process.env.PORT || 5000;
+
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+        console.log(`Server running locally on port ${PORT}`);
+    });
+}
+
+export default app;
