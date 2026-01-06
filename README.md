@@ -97,5 +97,22 @@ Built with the **MERN Stack** (MongoDB, Express, React, Node).
 - **Backend:** Vercel (Serverless)
 - **Database:** MongoDB Atlas
 
+
+##  System Architecture
+
+The system follows a **Decoupled Client-Server Architecture** utilizing the MERN stack with strict type safety.
+
+- **Client-Server Model:** A **React.js Single Page Application (SPA)** communicating with a Node.js/Express backend via RESTful endpoints.
+- **RESTful API with TypeScript:** Strongly typed API layer ensuring data consistency and scalable code maintenance.
+- **Service-Controller Pattern:** Modular backend structure where business logic (services), request handling (controllers), and data models (models) are strictly separated.
+- **Secure Authentication Strategy:**
+  - **Access Tokens:** Short-lived JWTs for stateless API access.
+  - **Refresh Tokens:** Secure `HttpOnly` cookies for session rotation and auto-login.
+  - **RBAC (Role-Based Access Control):** Middleware-enforced permission levels for User, Receptionist, Admin, and Super Admin.
+- **AI Service Integration:** Dedicated controller handling communication between the user frontend and **Google Gemini API** for chatbot responses.
+- **Cloud-Native Deployment:**
+  - **Frontend & Backend:** Hosted on Vercel.
+  - **Database:** Hosted on MongoDB Atlas.
+
 ---
 
