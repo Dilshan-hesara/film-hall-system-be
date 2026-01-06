@@ -75,9 +75,11 @@ Built with the **MERN Stack** (MongoDB, Express, React, Node).
 ### Backend
 - **Node.js & Express.js:** Scalable REST API.
 - **MongoDB Atlas:** Cloud Database.
-- **Mongoose:** Object Data Modeling (ODM).
+- **Mongoose:** Object Data Modeling .
+- **Nodemailer** (Email notifications)
 - **Google Generative AI:** AI Chatbot integration.
 - **JsonWebToken (JWT):** Secure Authentication.
+- **Bcrypt.js** - Password hashing.
 
 ### Deployment
 - **Frontend:** Vercel
