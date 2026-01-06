@@ -13,6 +13,17 @@ Built with the **MERN Stack** (MongoDB, Express, React, Node).
 
 ---
 
+##  Advanced Features
+
+* **AI Smart Assistant:** Integrated Google Gemini AI (Flash Model) chatbot for instant customer support regarding movies and showtimes.
+* **Digital QR Ticketing:** Automated generation of unique QR Codes for secure ticket validation and entrance scanning.
+* **PDF Downloads:** Feature to generate and download Booking Tickets and Daily Reception Shift Reports as PDF files.
+* **Email Notifications:** Automated email system sending booking confirmations and e-tickets directly to the user.
+* **Real-time Seat Booking:** Interactive visual seat map with real-time status updates (Available/Occupied/Selected).
+* **POS Shift Reporting:** Auto-calculation of daily Cash/Card sales and Net Cash-in-Hand generation for receptionists.
+* **Interactive Analytics Dashboard:** Visual charts and graphs tracking revenue trends, top-performing movies, and user growth.
+* **Secure Authentication:** Advanced security using JWT Access Tokens and HttpOnly Refresh Tokens for session management.
+
 ## Key Features
 
 ### Super Admin & Resource Management
