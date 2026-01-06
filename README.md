@@ -8,7 +8,7 @@ Built with the MERN Stack (MongoDB, Express, React, Node).
 
 | Component | Status | URL |
 |-----------|:------:|-----|
-| **MKD Cinemas (Live System)** | ✅ Live | [https://mkd.dilshanhesara.com](https://mkdcinemas.dilshanhesara.com) |
+| **MKD Cinemas (Live System)** | ✅ Live | [https://mkdcinemas.dilshanhesara.com](https://mkdcinemas.dilshanhesara.com) |
 
 ---
 
