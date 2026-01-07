@@ -30,7 +30,7 @@ app.use(
     
       "http://localhost:5173",
 
-      "http://mkdcinemas.dilshanhesara.com "
+      "https://mkdcinemas.dilshanhesara.com"
     ],
     methods: ["GET", "POST", "PUT", "DELETE"]
   })
