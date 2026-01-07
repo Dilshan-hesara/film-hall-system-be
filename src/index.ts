@@ -27,7 +27,11 @@ app.use(
   cors({
     origin: [
       "https://film-hall-system-fe.vercel.app",
-      "http://localhost:5173" ],
+    
+      "http://localhost:5173",
+
+      "http://mkdcinemas.dilshanhesara.com "
+    ],
     methods: ["GET", "POST", "PUT", "DELETE"]
   })
 )
