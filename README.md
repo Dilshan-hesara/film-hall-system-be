@@ -4,6 +4,14 @@ A comprehensive, full-stack web application designed for modern cinema managemen
 
 Built with the MERN Stack (MongoDB, Express, React, Node).
 
+
+## 🔗 Quick Links
+
+| 🌐 **Live Website** | 🎥 **Video Demo** |
+|:---:|:---:|
+| [Visit Website](mkdcinemas.dilshanhesara.com) | [Watch on YouTube](https://youtu.be/qLToy69-wQ4) |
+
+
 ##  Live Deployment
 
 | Component | Status | URL |
