@@ -1,4 +1,4 @@
-# MKD Cinema - Smart Movie Ticket Booking System
+# MKDCinemas Complete Cinema Management System &  End-to-End Online Ticket Booking Platform Demonstration
 
 A comprehensive, full-stack web application designed for modern cinema management. This system features a seamless Customer Booking Portal, a powerful Super Admin Dashboard for resource management, and a Receptionist POS for handling counter sales and shift reports.
 
