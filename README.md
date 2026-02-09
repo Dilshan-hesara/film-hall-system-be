@@ -9,14 +9,14 @@ Built with the MERN Stack (MongoDB, Express, React, Node).
 
 | 🌐 **Live Website** | 🎥 **Video Demo** |
 |:---:|:---:|
-| [Visit Website](mkdcinemas.dilshanhesara.com) | [Watch on YouTube](https://youtu.be/qLToy69-wQ4) |
+| [Visit Website](https://mkdcinemas.dilshanhesara.com/) | [Watch on YouTube](https://youtu.be/qLToy69-wQ4) |
 
 
 ##  Live Deployment
 
 | Component | Status | URL |
 |-----------|:------:|-----|
-| **MKD Cinemas (Live System)** | ✅ Live | [https://mkdcinemas.dilshanhesara.com](https://mkdcinemas.dilshanhesara.com) |
+| **MKD Cinemas (Live System)** | ✅ Live | [mkdcinemas.dilshanhesara.com](https://mkdcinemas.dilshanhesara.com) |
 
 ---
 
